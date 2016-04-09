@@ -11,9 +11,11 @@ from yaml import load, dump
 
 from Logger import *
 logger = setupLogging(__name__)
-logger.setLevel(DEBUG)
+logger.setLevel(INFO)
 
 import requests
+
+folder = list()
 
 
 def dumpBookmarks(y, n=0):
@@ -24,6 +26,14 @@ def dumpBookmarks(y, n=0):
     if isinstance(y, dict):
         logger.debug(u"%sdict[%d]" % (spaces, len(y)))
         for k, v in y.items():
+            if k == u"type" and v == u"folder":
+                logger.info(u"%sFolder %s" % (spaces, y[u"name"]))
+            elif k == u"type" and v == u"url":
+                logger.info(u"%sURL    %s" % (spaces, y[u"url"]))
+            else:
+                if k not in (u"type", u"folder"):
+                    logger.debug(u"%s" % y[k])
+
             dumpBookmarks(v, n)
 
     elif isinstance(y, list):
@@ -51,9 +61,6 @@ if __name__ == u"__main__":
         ym = load(data)
 
     dumpBookmarks(ym)
-
-    for key, value in ym.items():
-        logger.info(u"%s.%s[%s]" % (key, value, type(value)))
 
     url = ym[u"roots"][u"bookmark_bar"][u"children"]
 
