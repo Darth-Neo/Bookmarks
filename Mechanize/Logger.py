@@ -1,15 +1,80 @@
 #!/usr/bin/env python
-# __author__ = u"james.morris"
-# __VERSION__ = u'0.1'
+#
+# Logging
+#
 import os
 import sys
-import time
-import requests
-from yaml import load, dump
 import pickle
-from Logger import *
+import time
+import logging
+import logging.handlers
+
+DEBUG = logging.DEBUG
+INFO  = logging.INFO
+WARN  = logging.WARN
+ERROR = logging.ERROR
+
+
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+
+
+def mkdirp(directory):
+    if not os.path.isdir(directory):
+        os.makedirs(directory)
+
+
+def setupLogging(name):
+    #
+    # Logging setup
+    #
+    mkdirp(u"logs")
+    logger = logging.getLogger(name)
+    logFile = u'./logs/log.txt'
+
+    # Note: Levels - DEBUG INFO WARN ERROR CRITICAL
+    logger.setLevel(logging.INFO)
+
+    logFormatter = logging.Formatter(u"%(asctime)s [%(levelname)-5.5s] [%(filename)s:%(lineno)s ] %(message)s")
+
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setFormatter(logFormatter)
+    logger.addHandler(consoleHandler)
+
+    fileHandler = logging.handlers.RotatingFileHandler(logFile, maxBytes=10485760, backupCount=5)
+    fileHandler.setFormatter(logFormatter)
+    logger.addHandler(fileHandler)
+
+    h = NullHandler()
+    logger.addHandler(h)
+
+    return logger
+
+# Simple way to include common functions
 logger = setupLogging(__name__)
 logger.setLevel(INFO)
+
+
+def ConfigSectionMap(section, Config):
+
+    dictV1 = dict()
+    options = Config.options(section)
+
+    for option in options:
+        try:
+            dictV1[option] = Config.get(section, option)
+
+            if dictV1[option] == -1:
+                logger.debug(u"skip: %s" % option)
+
+        except Exception, msg:
+            logger.debug(u"%s on %s!" % (msg, option))
+            dictV1[option] = None
+
+    logger.debug(u"dict : %s" % dictV1)
+
+    return dictV1
 
 
 def startTimer():
@@ -42,16 +107,14 @@ def stopTimer(start_time):
         hours = minutes / 60
         minutes %= 60
 
-    logger.info(u"Process Time = %4.2f seconds, of %d Hours, %d Minute(s), %d Seconds" % (timeTaken, hours, minutes, seconds))
+    logger.info(u"Process Time = %4.2f seconds, of %d Hours, %d Minute(s), %d Seconds" %
+                (timeTaken, hours, minutes, seconds))
 
 
-def dumpBookmarks(y, folders=None, n=0):
-
-    if folders is None:
-        folders = list()
+def dumpCollection(y, folders=list(), bookmarks=list(), n=0):
 
     n += 1
-    spaces = U" " * n
+    spaces = U" \t" * n
 
     if isinstance(y, dict):
         logger.debug(u"%sdict[%d]" % (spaces, len(y)))
@@ -61,7 +124,7 @@ def dumpBookmarks(y, folders=None, n=0):
                 fld.append(y[u"name"])
                 folders.append(fld)
                 logger.debug(u"%sFolder %s" % (spaces, y[u"name"]))
-                folders = dumpBookmarks(v, fld, n)
+                folders = dumpCollection(v, fld, bookmarks, n)
 
             elif k == u"type" and v == u"url":
                 folders.append(y[u"url"])
@@ -71,23 +134,24 @@ def dumpBookmarks(y, folders=None, n=0):
                 if k not in (u"type", u"folder"):
                     logger.debug(u"%s" % y[k])
 
-            folders = dumpBookmarks(v, folders, n)
+            folders = dumpCollection(v, folders, bookmarks, n)
 
     elif isinstance(y, list):
         logger.debug(u"%slist[%d]" % (spaces, len(y)))
         for v in y:
-            dumpBookmarks(v, folders, n)
+            dumpCollection(v, folders, bookmarks, n)
     else:
         if isinstance(y, int):
             logger.debug(u"%s%d" % (spaces, y))
         elif isinstance(y, float):
             logger.debug(u"%s%f" % (spaces, y))
         elif isinstance(y, str):
+            bookmarks.append(y)
             logger.debug(u"%s%s" % (spaces, y))
         else:
             logger.debug(u"%s%s" % (spaces, type(y)))
 
-    return folders
+    return folders, bookmarks
 
 
 def saveList(pl, listFile):
@@ -102,7 +166,7 @@ def saveList(pl, listFile):
 
 
 def loadList(listFile):
-    concepts = None
+    pl = None
 
     if not os.path.exists(listFile):
         logger.error(u"%s : Does Not Exist!" % listFile)
@@ -116,29 +180,6 @@ def loadList(listFile):
     except Exception, msg:
         logger.error(u"%s" % msg)
 
-    return concepts
+    return pl
 
 
-if __name__ == u"__main__":
-
-    st = startTimer()
-
-    ym = None
-    bookmarks = u"/home/james.morris/.config/google-chrome/Default/Bookmarks"
-    listFile = os.getcwd() + os.sep + u"folders.pl"
-
-    with open(bookmarks, "rb") as f:
-        bk = f.readlines()
-
-        data = u" ".join([x.decode(u"utf-8", errors=u"replace") for x in bk])
-        ym = load(data)
-
-        url = ym[u"roots"][u"bookmark_bar"][u"children"]
-        folders = dumpBookmarks(url)
-
-    for x in folders:
-        print x
-
-    logger.info(u"Saving : %s" % listFile)
-    saveList(folders, listFile)
-    stopTimer(st)
