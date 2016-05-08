@@ -159,10 +159,10 @@ def dumpCollection(y, folders=list(), bookmarks=list(), n=0):
 def saveList(pl, listFile):
     try:
         logger.debug(u"Save : %s" % listFile)
-        if False:
-            cf = open(listFile, u"wb")
-            pickle.dump(pl, cf)
-            cf.close()
+
+        cf = open(listFile, u"wb")
+        pickle.dump(pl, cf)
+        cf.close()
 
     except IOError, msg:
         logger.error(u"%s - %s " % (msg, str(sys.exc_info()[0])))

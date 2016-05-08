@@ -42,8 +42,6 @@ class Bookmarks(object):
                 if isinstance(ym, dict):
                     url = ym[u"roots"][u"bookmark_bar"][u"children"]
                     flds, bkms = dumpCollection(url)
-                else:
-                    raise SystemExit()
 
             except Exception, msg:
                 logger.error(u"%s" % msg)
