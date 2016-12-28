@@ -1,55 +1,144 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import os
 import pytest
 import platform
 from yaml import load as yload
 
 from Logger import *
 logger = setupLogging(__name__)
-logger.setLevel(DEBUG)
+logger.setLevel(INFO)
+
+error_count = 0
+url_count = 0
+folders = list()
+bookmarks = list()
+
+def dumpCollection(y, n=0, folder=None):
+    n += 1
+    spaces = " \t" * n
+    global error_count
+    global url_count
+    global folders
+    global bookmarks
+
+    try:
+        if isinstance(y, dict):
+            logger.debug(u"%sdict.len[%d]" % (spaces, len(y)))
+
+            if  u"folder" in y.values():
+                if folder is None:
+                    folder = y[u"name"].encode(u"utf-8", errors=u"replace")
+                else:
+                    name = y[u"name"].replace(u"\\", u"-")
+                    folder += os.sep + name.encode(u"utf-8", errors=u"replace")
+
+                folders.append(folder)
+
+                try:
+                    if not os.path.isdir(folder):
+                        os.makedirs(folder)
+                    os.chdir(folder)
+
+                except Exception, msg:
+                    logger.error(u"%s" % msg)
+                    error_count += 1
+
+                logger.info(u"New folder : %s cwd : %s" % (folder, os.getcwd()))
+                logger.info(u"Children : %d" % len(y[u"children"]))
+                dumpCollection(y[u"children"], n, folder)
+                url_count += 1
+                os.chdir(u"..")
+                logger.info(u"Old folder : %s cwd : %s" % (folder, os.getcwd()))
+
+            if  u"url" in y.values():
+                uri = None
+                name = None
+
+                try:
+                    uri = y[u"url"].encode(u"utf-8", errors=u"replace")
+                    name = y[u"name"].encode(u"utf-8", errors=u"replace")
+                except Exception, msg:
+                    logger.error(u"%s" % msg)
+                    error_count += 1
+
+                logger.info(u"%sFolder --%s" % (spaces, os.getcwd()))
+
+                # Dump file into directory
+                url = "{}{}{}{}".format(name, os.linesep, uri, os.linesep)
+                with open(y[u"id"], "wb") as f:
+                    f.write(url)
+
+                bookmarks.append(uri)
+                logger.info(u"%sURL : %s : %s" % (spaces, y[u"name"], y[u"url"]))
+
+        elif isinstance(y, list):
+            logger.debug(u"%slist.Len[%d]" % (spaces, len(y)))
+            for v in y:
+                dumpCollection(v, n)
+                url_count += 1
+
+    except Exception, msg:
+        logger.error(u"%s" % msg)
+        error_count += 1
+
+    return folder
 
 
 class Bookmarks(object):
     fileBookmarks = None
-    filefolders = None
+    fileFolders = None
 
-    def __init__(self, fileBookmarks=None):
-        runDir = u"run"
-
+    def __init__(self, bookmarks=None):
         home = os.getcwd()
+        logger.info(u"cwd : %s" % os.getcwd())
 
+        runDir = u"{}{}{}".format(home, os.sep, u"run")
         if not os.path.isdir(runDir):
             os.makedirs(runDir)
+        os.chdir(runDir)
 
-        if fileBookmarks is None:
-            self.fileBookmarks = self._determineBookmarkFile()
+        self.fileFolders = runDir + os.sep + u"folders.pl"
+        self.fileBookmarks = runDir + os.sep + u"bookmarks.pl"
+
+        startDir = os.getcwd() + os.sep + u"data"
+        if not os.path.isdir(startDir):
+            os.makedirs(startDir)
+        os.chdir(startDir)
+
+        logger.info(u"cwd : %s" % os.getcwd())
+
+        if bookmarks is None:
+            self.bookmarks = self._determineBookmarkFile()
         else:
-            self.fileBookmarks = fileBookmarks
-
-        self.fileFolders = home + os.sep + runDir + os.sep + u"folders.pl"
+            self.bookmarks = bookmarks
 
     def processBookmarks(self):
-        flds = None
-        bkms = None
 
-        with open(self.fileBookmarks, "rb") as f:
+        folders = list()
+        bookmarks = list()
+
+        with open(self.bookmarks, "rb") as f:
             bk = f.readlines()
 
             try:
-
                 data = u" ".join([xx.decode(u"utf-8", errors=u"replace") for xx in bk])
                 ym = yload(data)
 
                 if isinstance(ym, dict):
-                    url = ym[u"roots"][u"bookmark_bar"][u"children"]
-                    flds, bkms = dumpCollection(url)
+                    ymd = ym[u"roots"][u"bookmark_bar"][u"children"]
+                    dumpCollection(ymd)
 
             except Exception, msg:
                 logger.error(u"%s" % msg)
 
-        logger.info(u"Saving : %s" % self.fileFolders)
-        saveList(flds, self.fileFolders)
+        logger.info(u"Saving : %s" % self.fileBookmarks)
+        saveList(bookmarks, self.fileBookmarks)
 
-        return flds, bkms
+        fld = sorted(list(set([x.lower() for x in folders])))
+        logger.info(u"Saving : %s" % self.fileFolders)
+        saveList(fld, self.fileFolders)
+
 
     @pytest.mark.Bookmarks
     def testBookmarks(self):
@@ -70,7 +159,7 @@ class Bookmarks(object):
         # Determine bookmark file
         pltfrm = platform.platform()
         if re.search(u"^Linux.*", pltfrm, re.M | re.I):
-            bookmarks = u"/home/james.morris/.config/google-chrome/Default/Bookmarks"
+            bookmarks = u"{}/.config/google-chrome/Default/Bookmarks".format(os.environ[u"HOME"])
         else:
             logger.error(u"Unknown OS")
             sys.exit()
@@ -79,19 +168,19 @@ class Bookmarks(object):
 
 
 def checkBookmarks():
+
     st = startTimer()
 
     bookmark = Bookmarks()
-    folders, bookmarks = bookmark.processBookmarks()
+    bookmark.processBookmarks()
+
+    if logger.isEnabledFor(logging.DEBUG):
+        logList(folders)
+        logList(bookmarks)
 
     logger.info(u"Found %d folders" % len(folders))
     logger.info(u"Found %d bookmarks" % len(bookmarks))
-
-    for x in folders:
-        logger.debug(u"%s" % x)
-
-    for x in bookmarks:
-        logger.debug(u"%s" % x)
+    logger.info(u"Errors : {}".format(error_count))
 
     stopTimer(st)
 

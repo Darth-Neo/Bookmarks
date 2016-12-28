@@ -15,22 +15,18 @@ INFO  = logging.INFO
 WARN  = logging.WARN
 ERROR = logging.ERROR
 
-
 class NullHandler(logging.Handler):
     def emit(self, record):
         pass
-
-
-def mkdirp(directory):
-    if not os.path.isdir(directory):
-        os.makedirs(directory)
-
 
 def setupLogging(name):
     #
     # Logging setup
     #
-    mkdirp(u"logs")
+    directory = u"logs"
+    if not os.path.isdir(directory):
+        os.makedirs(directory)
+
     logger = logging.getLogger(name)
     logFile = u'./logs/log.txt'
 
@@ -112,50 +108,6 @@ def stopTimer(start_time):
                 (timeTaken, hours, minutes, seconds))
 
 
-def dumpCollection(y, folders=list(), bookmarks=list(), n=0):
-
-    n += 1
-    spaces = U" \t" * n
-
-    if isinstance(y, dict):
-        logger.debug(u"%sdict[%d]" % (spaces, len(y)))
-        for k, v in y.items():
-            if k == u"type" and v == u"folder":
-                fld = list()
-                fld.append(y[u"name"])
-                folders.append(fld)
-                logger.debug(u"%sFolder %s" % (spaces, y[u"name"]))
-                folders, bookmarks = dumpCollection(v, fld, bookmarks, n)
-
-            elif k == u"type" and v == u"url":
-                folders.append(y[u"url"])
-                logger.debug(u"%sURL    %s" % (spaces, y[u"url"]))
-
-            else:
-                if k not in (u"type", u"folder"):
-                    logger.debug(u"%s" % y[k])
-
-            folders, bookmarks = dumpCollection(v, folders, bookmarks, n)
-
-    elif isinstance(y, list):
-        logger.debug(u"%slist[%d]" % (spaces, len(y)))
-        for v in y:
-            folders, bookmarks = dumpCollection(v, folders, bookmarks, n)
-    else:
-        if isinstance(y, int):
-            logger.debug(u"%s%d" % (spaces, y))
-        elif isinstance(y, float):
-            logger.debug(u"%s%f" % (spaces, y))
-        elif isinstance(y, str):
-            if re.search(r"^http.+", y, re.M|re.I):
-                bookmarks.append(y)
-            logger.debug(u"%s%s" % (spaces, y))
-        else:
-            logger.debug(u"%s%s" % (spaces, type(y)))
-
-    return folders, bookmarks
-
-
 def saveList(pl, listFile):
     try:
         logger.debug(u"Save : %s" % listFile)
@@ -186,3 +138,6 @@ def loadList(listFile):
     return pl
 
 
+def logList(l):
+    for x in l:
+        logger.info(u"%s" % x)
