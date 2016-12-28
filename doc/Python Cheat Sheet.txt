@@ -1,0 +1,27 @@
+# Python Cheat Sheet
+
+a = list([x for x in range(10)])
+
+b = list([int(random.random() * 100) for x in range(10)])
+
+m = zip(a, b)
+
+s = sorted(m, key=lambda n: n[1])
+
+s = [x for x in y if len(x) == 1
+
+
+# Ordering with a dict
+m = {"a" : 1, "b": 2, "c" : 3}
+
+if "a" in m.keys():
+     print True
+True
+
+if "f" in m.keys():
+    print True
+
+if 1 in m.values():
+     print True
+True
+

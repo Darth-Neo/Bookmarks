@@ -1,4 +1,8 @@
 # Byte-compiled / optimized / DLL files
+logs/
+hold/
+gensim_server/
+run/
 log.txt
 __pycache__/
 *.py[cod]
