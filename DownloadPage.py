@@ -28,11 +28,10 @@ def test_clean_word():
     v = u"The big pid jumped the moon"
     c = clean_word(v)
 
-if __name__ == u"__main__":
+def download_page(url):
 
     stop_words = load_stop_words()
 
-    url = u"http://www.foxnews.com"
     html = requests.get(url).text
     soup = BeautifulSoup(html)
 
@@ -71,3 +70,6 @@ if __name__ == u"__main__":
     filename = "fn.pl"
     saveList(s, filename)
 
+if __name__ == u"__main__":
+    url = u"http://www.foxnews.com"
+    download_page(url)
