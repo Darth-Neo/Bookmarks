@@ -4,6 +4,7 @@ import os
 import pytest
 import platform
 from yaml import load as yload
+import urllib2
 
 from Logger import *
 logger = setupLogging(__name__)
@@ -13,6 +14,11 @@ error_count = 0
 url_count = 0
 folders = list()
 bookmarks = list()
+
+def downloadPage(url):
+    response = urllib2.urlopen(url)
+    webContent = response.read()
+
 
 def dumpCollection(y, n=0, folder=None):
     n += 1
@@ -64,8 +70,10 @@ def dumpCollection(y, n=0, folder=None):
 
                 logger.info(u"%sFolder --%s" % (spaces, os.getcwd()))
 
+                text = downloadPage(url)
+
                 # Dump file into directory
-                url = "{}{}{}{}".format(name, os.linesep, uri, os.linesep)
+                url = "{},{}{}".format(name, uri, os.linesep)
                 with open(y[u"id"], "wb") as f:
                     f.write(url)
 
@@ -114,9 +122,6 @@ class Bookmarks(object):
             self.bookmarks = bookmarks
 
     def processBookmarks(self):
-
-        folders = list()
-        bookmarks = list()
 
         with open(self.bookmarks, "rb") as f:
             bk = f.readlines()

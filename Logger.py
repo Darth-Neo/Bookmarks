@@ -108,6 +108,12 @@ def stopTimer(start_time):
                 (timeTaken, hours, minutes, seconds))
 
 
+def dict_count(d, v):
+    if v in d:
+        d[v]  += 1
+    else:
+        d[v] = 1
+
 def saveList(pl, listFile):
     try:
         logger.debug(u"Save : %s" % listFile)
