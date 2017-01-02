@@ -5,6 +5,7 @@ import pytest
 import platform
 from yaml import load as yload
 import urllib2
+from DownloadPage import *
 
 from Logger import *
 logger = setupLogging(__name__)
@@ -15,9 +16,10 @@ url_count = 0
 folders = list()
 bookmarks = list()
 
-def downloadPage(url):
-    response = urllib2.urlopen(url)
-    webContent = response.read()
+# Weed out URLs that from sdevjmmlinux
+url_skip = ["192.168.1.1", "192.168.1.3", "192.168.1.6",
+            "192.168.1.75", "192.168.1.137", "192.168.1.250",
+            "192.168.0.100", "127.0.0.1", "localhost", ]
 
 
 def dumpCollection(y, n=0, folder=None):
@@ -70,15 +72,16 @@ def dumpCollection(y, n=0, folder=None):
 
                 logger.info(u"%sFolder --%s" % (spaces, os.getcwd()))
 
-                text = downloadPage(url)
-
                 # Dump file into directory
                 url = "{},{}{}".format(name, uri, os.linesep)
                 with open(y[u"id"], "wb") as f:
                     f.write(url)
 
-                bookmarks.append(uri)
-                logger.info(u"%sURL : %s : %s" % (spaces, y[u"name"], y[u"url"]))
+                urp = urlparse(uri)[1].split(":")[0]
+                if urp not in url_skip:
+                    w = list([name, uri])
+                    bookmarks.append(w)
+                    logger.info(u"%sURL : %s : %s" % (spaces, y[u"name"], y[u"url"]))
 
         elif isinstance(y, list):
             logger.debug(u"%slist.Len[%d]" % (spaces, len(y)))

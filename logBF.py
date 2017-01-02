@@ -17,7 +17,7 @@ if __name__ == u"__main__":
     fileBookmarks = home + os.sep + runDir + os.sep + u"bookmarks.pl"
 
     folders = loadList(fileFolders)
-    logList(folders)
+    # logList(folders)
 
     bookmarks = loadList(fileBookmarks)
     logList(bookmarks)

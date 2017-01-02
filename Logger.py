@@ -108,6 +108,16 @@ def stopTimer(start_time):
                 (timeTaken, hours, minutes, seconds))
 
 
+def stopwatch(func):
+    def fw(*args, **kwargs):
+        st = startTimer()
+        logger.debug("***********************************Before calling %s" % func.__name__)
+        func(*args, **kwargs)
+        logger.debug("***********************************After calling %s" % func.__name__)
+        stopTimer(st)
+    return fw
+
+
 def dict_count(d, v):
     if v in d:
         d[v]  += 1
