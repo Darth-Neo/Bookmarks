@@ -5,15 +5,18 @@ logger = setupLogging(__name__)
 logger.setLevel(INFO)
 
 
+def logWordID(fileWords = u"word_ip.pd"):
+
+    with open(fileWords, u"rb") as cf:
+        wd = pickle.load(cf)
+        logger.debug(u"Loaded : %s" % fileWords)
+        cf.close()
+
+        for k, v in wd.items():
+            logger.info(u"{}".format(k))
+            for n, v1 in enumerate(v):
+                logger.info(u"    {}.{}".format(n, v1[0]))
+
+
 if __name__ == u"__main__":
-
-
-    fileWords = u"word_ip.pd"
-
-    cf = open(fileWords, u"rb")
-    wd = pickle.load(cf)
-    logger.debug(u"Loaded : %s" % fileWords)
-    cf.close()
-
-    for k, v in wd:
-        logger.info(u"{} : ()".format(k, v))
+    logWordID()

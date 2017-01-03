@@ -6,7 +6,7 @@ def insert_Message(message):
     client = MongoClient(u'mongodb://localhost:27017/')
 
     db = client[u"local"]
-    collection = db[u'Weather']
+    collection = db[u'Bookmarks']
 
     collection.insert_one(message)
 

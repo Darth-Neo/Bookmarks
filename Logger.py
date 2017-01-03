@@ -111,9 +111,9 @@ def stopTimer(start_time):
 def stopwatch(func):
     def fw(*args, **kwargs):
         st = startTimer()
-        logger.debug("***********************************Before calling %s" % func.__name__)
+        logger.debug("Before calling %s" % func.__name__)
         func(*args, **kwargs)
-        logger.debug("***********************************After calling %s" % func.__name__)
+        logger.debug("After calling %s" % func.__name__)
         stopTimer(st)
     return fw
 
