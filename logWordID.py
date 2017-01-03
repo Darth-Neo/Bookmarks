@@ -12,10 +12,14 @@ def logWordID(fileWords = u"word_ip.pd"):
         logger.debug(u"Loaded : %s" % fileWords)
         cf.close()
 
-        for k, v in wd.items():
-            logger.info(u"{}".format(k))
+        # s = sorted(m, key=lambda n: n[1])
+        t = [(k, len(v)) for k, v in wd.items()]
+        ts = sorted(t, key=lambda c: c[1], reverse=True)
+
+        for v in ts:
+            logger.info(u"{}".format(v[0]))
             for n, v1 in enumerate(v):
-                logger.info(u"    {}.{}".format(n, v1[0]))
+                logger.info(u"    {}. {}".format(n, v1))
 
 
 if __name__ == u"__main__":
