@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 #
-# Logging and utilities
+# Logging
 #
 import os
 import sys
@@ -81,7 +79,7 @@ def startTimer():
     t0 = time.clock()
     start_time = time.time()
     strStartTime = time.asctime(time.localtime(start_time))
-    logger.debug(u"Start time : %s" % strStartTime)
+    logger.info(u"Start time : %s" % strStartTime)
 
     return start_time
 
@@ -89,7 +87,7 @@ def startTimer():
 def stopTimer(start_time):
     # measure wall time
     strStartTime = time.asctime(time.localtime(start_time))
-    logger.debug(u"Start time : %s" % strStartTime)
+    logger.info(u"Start time : %s" % strStartTime)
 
     end_time = time.time()
 
@@ -159,17 +157,3 @@ def loadList(listFile):
 def logList(l):
     for x in l:
         logger.info(u"%s" % x)
-
-
-def force_unicode(value):
-    """
-    Forces a bytestring to become a Unicode string.
-    """
-
-    if isinstance(value, str):
-        value = value.decode('utf-8', 'replace')
-    elif not isinstance(value, basestring):
-        value = unicode(value)
-
-    return value
-

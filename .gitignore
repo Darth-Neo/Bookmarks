@@ -2,6 +2,7 @@
 logs/
 hold/
 gensim_server/
+*.csv
 run/
 log.txt
 __pycache__/

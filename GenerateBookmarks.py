@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import os
 import pytest
 import platform
@@ -174,7 +175,7 @@ class Bookmarks(object):
 
         return bookmarks
 
-
+@stopwatch
 def checkBookmarks():
 
     st = startTimer()
