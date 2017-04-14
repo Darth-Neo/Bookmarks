@@ -12,9 +12,9 @@ assert s is not None
 
 
 def import_doc(sd, c=None):
-    collection = u"gettingstarted"
+    Collection = u"gettingstarted"
     if c is None:
-        c = pysolr.Solr(u'http://localhost:8983/solr/%s/' % collection)
+        c = pysolr.Solr(u'http://localhost:8983/solr/%s/' % Collection)
     try:
         return c.add(sd, commit=True)
 

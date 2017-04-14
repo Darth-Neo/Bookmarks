@@ -4,7 +4,7 @@ import requests
 import random
 import time
 from urlparse import urlparse
-from solr_import import *
+from a3_SolrImport import import_doc
 import tika
 from tika import parser
 from pymongo import *
@@ -19,6 +19,7 @@ mongo_collection = db[u"Bookmarks"]
 # collection.remove()
 
 stop_words = None
+
 
 def get_stop_words():
     global stop_words
@@ -60,11 +61,14 @@ def compute_tf_idf(url, text):
     doc[u"name"] = url[0]
     return doc
 
+
 def persist_url_words(message):
     mongo_collection.insert_one(message)
 
+
 def export_doc(message):
     import_doc([message])
+
 
 def tika_parse(html, show_content=False):
     parsed = None
@@ -86,6 +90,7 @@ def tika_parse(html, show_content=False):
 
     return parsed
 
+
 def download_page(url):
     global stop_words
     text = dict()
@@ -93,7 +98,7 @@ def download_page(url):
     html = requests.get(url[1], timeout=10).text
 
     tp = tika_parse(html)
-    df = [x.lower() for x in tp[u"content"].split(os.linesep) if x != os.linesep]
+    df = [x.lower() for x in tp[u"content"].split(os.linesep) if x != os.linesep and len(x) > 2]
 
     try:
         for words in df:
@@ -110,6 +115,7 @@ def download_page(url):
     f = compute_tf_idf(url, text)
     persist_url_words(f)
     export_doc(f)
+
 
 @stopwatch
 def main(test=False):

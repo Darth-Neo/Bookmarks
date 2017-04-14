@@ -157,8 +157,8 @@ def loadList(listFile):
 
 
 def logList(l):
-    for n, x in enumerate(l):
-        logger.info(u"%d : %s" % (n, x))
+    for x in l:
+        logger.info(u"%s" % x)
 
 
 def force_unicode(value):

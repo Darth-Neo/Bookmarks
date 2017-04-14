@@ -1,0 +1,22 @@
+Elastic-Net penalty seems to work best
+
+# -*- coding: utf-8 -*-
+
+a1_GenerateBookmarks.py
+Bookmarks[YAML] -> directory and url files
+Eliminates any duplicates
+Create run/data directories to mimic folders from Bookmarks - i.e. "chrome://bookmarks/,Bookmarks"
+No MongoDB
+
+a2_DownloadPage.py
+Uses the run/data directory to recursively iterate through the files
+Leverages Tika for text scraping
+Computes the term frequency and the inverse document frequency
+Creates MongoDB Collections: Bookmarks
+
+a3_SolrImport.py
+Adds the document to Solr
+
+a4_SetWordID.py
+Normalize words - lower case, stemming, ...
+Uses MongoDB Collections: Bookmarks and Words

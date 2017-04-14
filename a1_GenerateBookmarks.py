@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
+# from __future__ import unicode_literals
 import os
 import pytest
 import platform
 from yaml import load as yload
 import urllib2
-from DownloadPage import *
+from a2_DownloadPage import *
 
 from Logger import *
 logger = setupLogging(__name__)
@@ -33,14 +33,14 @@ def dumpCollection(y, n=0, folder=None):
 
     try:
         if isinstance(y, dict):
-            logger.debug(u"%sdict.len[%d]" % (spaces, len(y)))
+            logger.debug("%sdict.len[%d]" % (spaces, len(y)))
 
-            if  u"folder" in y.values():
+            if "folder" in y.values():
                 if folder is None:
-                    folder = y[u"name"].encode(u"utf-8", errors=u"replace")
+                    folder = y["name"].encode("utf-8", errors="replace").lower()
                 else:
-                    name = y[u"name"].replace(u"\\", u"-")
-                    folder += os.sep + name.encode(u"utf-8", errors=u"replace")
+                    name = y["name"].replace("\\", "-")
+                    folder += os.sep + name.encode("utf-8", errors="replace").lower()
 
                 folders.append(folder)
 
@@ -50,48 +50,48 @@ def dumpCollection(y, n=0, folder=None):
                     os.chdir(folder)
 
                 except Exception, msg:
-                    logger.error(u"%s" % msg)
+                    logger.error("{0} : {1}".format(msg, folder))
                     error_count += 1
 
-                logger.info(u"New folder : %s cwd : %s" % (folder, os.getcwd()))
-                logger.info(u"Children : %d" % len(y[u"children"]))
-                dumpCollection(y[u"children"], n, folder)
+                logger.info("New folder : %s cwd : %s" % (folder, os.getcwd()))
+                logger.info("Children : %d" % len(y["children"]))
+                dumpCollection(y["children"], n, folder)
                 url_count += 1
-                os.chdir(u"..")
-                logger.info(u"Old folder : %s cwd : %s" % (folder, os.getcwd()))
+                os.chdir("..")
+                logger.info("Old folder : %s cwd : %s" % (folder, os.getcwd()))
 
-            if  u"url" in y.values():
+            elif "url" in y.values():
                 uri = None
                 name = None
 
                 try:
-                    uri = y[u"url"].encode(u"utf-8", errors=u"replace")
-                    name = y[u"name"].encode(u"utf-8", errors=u"replace")
+                    uri = y["url"].encode("utf-8", errors="replace")
+                    name = y["name"].encode("utf-8", errors="replace")
                 except Exception, msg:
-                    logger.error(u"%s" % msg)
+                    logger.error("%s" % msg)
                     error_count += 1
 
-                logger.info(u"%sFolder --%s" % (spaces, os.getcwd()))
+                logger.info("%sFolder --%s" % (spaces, os.getcwd()))
 
                 # Dump file into directory
-                url = "{},{}{}".format(name, uri, os.linesep)
-                with open(y[u"id"], "wb") as f:
+                url = "{},{}{}".format(uri, name, folder, os.linesep)
+                with open(y["id"], "wb") as f:
                     f.write(url)
 
                 urp = urlparse(uri)[1].split(":")[0]
                 if urp not in url_skip:
                     w = list([name, uri])
                     bookmarks.append(w)
-                    logger.info(u"%sURL : %s : %s" % (spaces, y[u"name"], y[u"url"]))
+                    logger.info("%sURL : %s : %s" % (spaces, y["name"], y["url"]))
 
         elif isinstance(y, list):
-            logger.debug(u"%slist.Len[%d]" % (spaces, len(y)))
+            logger.debug("%slist.Len[%d]" % (spaces, len(y)))
             for v in y:
-                dumpCollection(v, n)
+                dumpCollection(v, n, folder)
                 url_count += 1
 
-    except Exception, msg:
-        logger.error(u"%s" % msg)
+    except Exception as e:
+        logger.error("Error on line {0}".format(sys.exc_info()[-1].tb_lineno), type(e), e)
         error_count += 1
 
     return folder
@@ -103,22 +103,22 @@ class Bookmarks(object):
 
     def __init__(self, bookmarks=None):
         home = os.getcwd()
-        logger.info(u"cwd : %s" % os.getcwd())
+        logger.info("cwd : %s" % os.getcwd())
 
-        runDir = u"{}{}{}".format(home, os.sep, u"run")
+        runDir = "{}{}{}".format(home, os.sep, "run")
         if not os.path.isdir(runDir):
             os.makedirs(runDir)
         os.chdir(runDir)
 
-        self.fileFolders = runDir + os.sep + u"folders.pl"
-        self.fileBookmarks = runDir + os.sep + u"bookmarks.pl"
+        self.fileFolders = runDir + os.sep + "folders.pl"
+        self.fileBookmarks = runDir + os.sep + "bookmarks.pl"
 
-        startDir = os.getcwd() + os.sep + u"data"
+        startDir = os.getcwd() + os.sep + "data"
         if not os.path.isdir(startDir):
             os.makedirs(startDir)
         os.chdir(startDir)
 
-        logger.info(u"cwd : %s" % os.getcwd())
+        logger.info("cwd : %s" % os.getcwd())
 
         if bookmarks is None:
             self.bookmarks = self._determineBookmarkFile()
@@ -131,33 +131,32 @@ class Bookmarks(object):
             bk = f.readlines()
 
             try:
-                data = u" ".join([xx.decode(u"utf-8", errors=u"replace") for xx in bk])
+                data = " ".join([xx.decode("utf-8", errors="replace") for xx in bk])
                 ym = yload(data)
 
                 if isinstance(ym, dict):
-                    ymd = ym[u"roots"][u"bookmark_bar"][u"children"]
+                    ymd = ym["roots"]["bookmark_bar"]["children"]
                     dumpCollection(ymd)
 
             except Exception, msg:
-                logger.error(u"%s" % msg)
+                logger.error("%s" % msg)
 
-        logger.info(u"Saving : %s" % self.fileBookmarks)
+        logger.info("Saving : %s" % self.fileBookmarks)
         saveList(bookmarks, self.fileBookmarks)
 
         fld = sorted(list(set([x.lower() for x in folders])))
-        logger.info(u"Saving : %s" % self.fileFolders)
+        logger.info("Saving : %s" % self.fileFolders)
         saveList(fld, self.fileFolders)
-
 
     @pytest.mark.Bookmarks
     def testBookmarks(self):
 
-        bookmarks = os.getcwd() + os.sep + u"test" + os.sep + u"TestBookmarks"
+        bookmarks = os.getcwd() + os.sep + "test" + os.sep + "TestBookmarks"
 
         with open(bookmarks, "rb") as f:
             bk = f.readlines()
 
-            data = u" ".join([xx.decode(u"utf-8", errors=u"replace") for xx in bk])
+            data = " ".join([xx.decode("utf-8", errors="replace") for xx in bk])
             ym = yload(data)
 
         assert (ym is not None)
@@ -167,10 +166,10 @@ class Bookmarks(object):
 
         # Determine bookmark file
         pltfrm = platform.platform()
-        if re.search(u"^Linux.*", pltfrm, re.M | re.I):
-            bookmarks = u"{}/.config/google-chrome/Default/Bookmarks".format(os.environ[u"HOME"])
+        if re.search("^Linux.*", pltfrm, re.M | re.I):
+            bookmarks = "{}/.config/google-chrome/Default/Bookmarks".format(os.environ["HOME"])
         else:
-            logger.error(u"Unknown OS")
+            logger.error("Unknown OS")
             sys.exit()
 
         return bookmarks
@@ -187,11 +186,11 @@ def checkBookmarks():
         logList(folders)
         logList(bookmarks)
 
-    logger.info(u"Found %d folders" % len(folders))
-    logger.info(u"Found %d bookmarks" % len(bookmarks))
-    logger.info(u"Errors : {}".format(error_count))
+    logger.info("Found %d folders" % len(folders))
+    logger.info("Found %d bookmarks" % len(bookmarks))
+    logger.info("Errors : {}".format(error_count))
 
     stopTimer(st)
 
-if __name__ == u"__main__":
+if __name__ == "__main__":
     checkBookmarks()

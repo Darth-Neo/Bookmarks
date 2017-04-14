@@ -17,6 +17,7 @@ processed_count = 0
 
 pf = u"word_ip.pd"
 
+
 def normalize_words(threshold=5.0):
     global processed_count
     global error_count
@@ -26,7 +27,7 @@ def normalize_words(threshold=5.0):
 
     for m, url in enumerate(Bookmarks.find()):
         try:
-            #logger.info(u"%6d, %s" % (m, url[u"url"]))
+            # logger.info(u"%6d, %s" % (m, url[u"url"]))
             for word in url[u"words"]:
                 l = list([url[u"name"], url[u"url"], word[0], word[1]])
                 # logger.info(u"%s\t%3.2f\t%d\t%s" % (l[0], l[3], l[2], l[1]))
