@@ -71,3 +71,8 @@ s = sorted(results, key=lambda result: result["count"], reverse=True)
 for doc in s: print doc;
 
 
+# Arrays
+# https://stackoverflow.com/questions/12629692/querying-an-array-of-arrays-in-mongod
+db.getCollection('Bookmarks').find({"words": {$size: 3}})
+db.getCollection('Bookmarks').find({'words':{$elemMatch:{$elemMatch:{$in:['resistor']}}}})
+db.getCollection('Bookmarks').find({'words':{$elemMatch:{$elemMatch:{$in:['find']}}}})

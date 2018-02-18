@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from pymongo import *
 
 from Logger import *
@@ -14,7 +13,6 @@ Words = db[u'Words']
 
 error_count = 0
 processed_count = 0
-
 pf = u"word_ip.pd"
 
 
@@ -42,7 +40,7 @@ def normalize_words(threshold=5.0):
             # logger.error(u"%s" % msg)
             error_count += 1
 
-        with open(pf, u"wb") as cf:
+        with open(pf, "w") as cf:
             pickle.dump(dictWords, cf)
 
     logger.info(u"Found {} bookmarks".format(processed_count))
@@ -55,7 +53,7 @@ def normalize_words(threshold=5.0):
 def insert_word_counts():
     global pf
 
-    with open(pf, u"rb") as cf:
+    with open(pf, "rb") as cf:
         pd = pickle.load(cf)
 
     for k, v in pd.items():
@@ -66,6 +64,7 @@ def insert_word_counts():
 
         wl = dict({k.replace(".", "-") : v})
         Words.insert(wl)
+
 
 if __name__ == u"__main__":
 

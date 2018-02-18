@@ -11,7 +11,7 @@ def collect_folders(folders, n=0):
 
     for fld in folders:
         n += 1
-        if isinstance(fld, "list"):
+        if isinstance(fld, list):
             ff = collect_folders(fld, n)
             f.append(ff)
         else:

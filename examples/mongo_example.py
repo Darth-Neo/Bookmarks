@@ -10,5 +10,6 @@ def insert_Message(message):
 
     collection.insert_one(message)
 
+
 if __name__ == u"__main__":
     pass

@@ -1,20 +1,20 @@
-import pysolr
-import tika
+#!/usr/bin/env python
 import datetime
+import pysolr
 
 from Logger import *
+
 logger = setupLogging(__name__)
 logger.setLevel(DEBUG)
 
-collection = u"gettingstarted"
-s = pysolr.Solr(u'http://localhost:8983/solr/%s/' % collection)
+collection = u"demo"
+s = pysolr.Solr(u'http://localhost:8984/solr/%s/' % collection)
 assert s is not None
 
 
 def import_doc(sd, c=None):
-    Collection = u"gettingstarted"
     if c is None:
-        c = pysolr.Solr(u'http://localhost:8983/solr/%s/' % Collection)
+        c = pysolr.Solr(u'http://localhost:8984/solr/%s/' % collection)
     try:
         return c.add(sd, commit=True)
 
@@ -34,8 +34,8 @@ def search_doc(sd, c):
 
 def test_fields():
     dtn = datetime.datetime.now()
-    doc1 = dict(id=1, title=u'Lucene in action', author=[u'james', u'kevin'], datetime=dtn,
-              d=u"book1", title_t=u"The Way of Kings", author_s=u"Brandon Sanderson")
+    doc1 = dict(id=1, title=u'Lucene in action', author=[u'james', u'kevin'], datetime=dtn, d=u"book1",
+                title_t=u"The Way of Kings", author_s=u"Brandon Sanderson")
 
     doc2 = dict()
     doc2[u'id'] = u"1"

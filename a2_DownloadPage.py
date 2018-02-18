@@ -1,17 +1,14 @@
 #!/usr/bin/env python
-import os
-import requests
 import random
-import time
-from urlparse import urlparse
-from a3_SolrImport import import_doc
-import tika
-from tika import parser
+import requests
 from pymongo import *
+from tika import parser
 
 from Logger import *
-# logger = setupLogging(__name__)
-logger.setLevel(INFO)
+from a3_SolrImport import import_doc
+
+logger = setupLogging(__name__)
+logger.setLevel(DEBUG)
 
 client = MongoClient(u"mongodb://localhost:27017/")
 db = client[u"local"]
@@ -53,12 +50,19 @@ def compute_tf_idf(url, text):
         if not (word in sw) and (len(word) > 0) and (count > 1):
             tfidf = float(float(count / float(len_s)) * 100.0)
             # logger.debug("%3.2f \t %4d \t .%s." % (tfidf, count, word))
-            p = list([tfidf, count, word])
+
+            # Always define the term, not just the value!
+            p = dict()
+            p[u"tfidf"] = tfidf
+            p[u"count"] = count
+            p[u"word"] = word
+            # p = list([tfidf, count, word])
             output.append(p)
 
     doc[u"url"] = url[1]
     doc[u"words"] = output
     doc[u"name"] = url[0]
+    doc[u"Total_Words"] = len(output)
     return doc
 
 
@@ -72,6 +76,7 @@ def export_doc(message):
 
 def tika_parse(html, show_content=False):
     parsed = None
+
     try:
         ServerEndpoint = u"http://localhost:9998"
         parsed = parser.from_buffer(html, serverEndpoint=ServerEndpoint)
@@ -86,7 +91,6 @@ def tika_parse(html, show_content=False):
 
     except Exception, msg:
         logger.error(u"{}".format(msg))
-        # sys.exit(1)
 
     return parsed
 
@@ -151,6 +155,7 @@ def main(test=False):
 
     logger.info(u"Found {} bookmarks".format(processed))
     logger.info(u"Errors : {}".format(error_count))
+
 
 if __name__ == u"__main__":
     os.environ[u"DEBUG_PYSOLR"] = u"0"

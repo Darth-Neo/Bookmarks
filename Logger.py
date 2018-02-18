@@ -1,25 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
+import logging
+import logging.handlers
+import pickle
+import sys
+import time
+
 #
 # Logging and utilities
 #
 import os
-import sys
-import pickle
-import time
-import re
-import logging
-import logging.handlers
 
 DEBUG = logging.DEBUG
-INFO  = logging.INFO
-WARN  = logging.WARN
+INFO = logging.INFO
+WARN = logging.WARN
 ERROR = logging.ERROR
+
 
 class NullHandler(logging.Handler):
     def emit(self, record):
         pass
+
 
 def setupLogging(name):
     #
@@ -30,7 +33,7 @@ def setupLogging(name):
         os.makedirs(directory)
 
     logger = logging.getLogger(name)
-    logFile = u'./logs/log.txt'
+    logFile = u"./logs/log.txt"
 
     # Note: Levels - DEBUG INFO WARN ERROR CRITICAL
     logger.setLevel(logging.INFO)
@@ -41,7 +44,7 @@ def setupLogging(name):
     consoleHandler.setFormatter(logFormatter)
     logger.addHandler(consoleHandler)
 
-    fileHandler = logging.handlers.RotatingFileHandler(logFile, maxBytes=10485760, backupCount=5)
+    fileHandler = logging.handlers.RotatingFileHandler(logFile, maxBytes=262144, backupCount=2)
     fileHandler.setFormatter(logFormatter)
     logger.addHandler(fileHandler)
 
@@ -50,13 +53,13 @@ def setupLogging(name):
 
     return logger
 
+
 # Simple way to include common functions
 logger = setupLogging(__name__)
 logger.setLevel(INFO)
 
 
 def ConfigSectionMap(section, Config):
-
     dictV1 = dict()
     options = Config.options(section)
 
@@ -113,24 +116,26 @@ def stopTimer(start_time):
 def stopwatch(func):
     def fw(*args, **kwargs):
         st = startTimer()
-        logger.debug("Before calling %s" % func.__name__)
+        logger.debug(u"Before calling %s" % func.__name__)
         func(*args, **kwargs)
-        logger.debug("After calling %s" % func.__name__)
+        logger.debug(u"After calling %s" % func.__name__)
         stopTimer(st)
+
     return fw
 
 
 def dict_count(d, v):
     if v in d:
-        d[v]  += 1
+        d[v] += 1
     else:
         d[v] = 1
+
 
 def saveList(pl, listFile):
     try:
         logger.debug(u"Save : %s" % listFile)
 
-        cf = open(listFile, u"wb")
+        cf = open(listFile, "w")
         pickle.dump(pl, cf)
         cf.close()
 
@@ -145,7 +150,7 @@ def loadList(listFile):
         logger.error(u"%s : Does Not Exist!" % listFile)
 
     try:
-        cf = open(listFile, u"rb")
+        cf = open(listFile, "r")
         pl = pickle.load(cf)
         logger.debug(u"Loaded : %s" % listFile)
         cf.close()
@@ -158,7 +163,7 @@ def loadList(listFile):
 
 def logList(l):
     for n, x in enumerate(l):
-        logger.info(u"%d : %s" % (n, x))
+        logger.info("%d : %s" % (n, x))
 
 
 def force_unicode(value):
@@ -172,4 +177,3 @@ def force_unicode(value):
         value = unicode(value)
 
     return value
-
