@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+# from __future__ import unicode_literals
+
 import platform
 import pytest
 import re
 import urlparse
 from yaml import load as yload
 from a2_DownloadPage import *
+
+import cgitb
+cgitb.enable(format='text')
 
 from Logger import *
 logger = setupLogging(__name__)
@@ -106,17 +110,17 @@ class Bookmarks(object):
                         name = y[u"name"].encode(u"utf-8", errors=u"replace")
 
                     except Exception, msg:
-                        logger.error("%s" % msg)
+                        logger.error(u"{}".format(msg))
                         self.error_count += 1
 
                     logger.debug(u"%sFolder --%s" % (spaces, os.getcwd()))
 
                     # Dump file into directory
-                    url = u"{},{}{}".format(name, uri, os.linesep)
+                    url = "{},{}{}".format(name, uri, os.linesep)
                     with open(y["id"], "w") as f:
                         f.write(url)
 
-                    urp = urlparse(uri)[1].split(":")[0]
+                    urp = urlparse.urlparse(uri)[1].split(":")[0]
                     if urp not in self.url_skip:
                         w = list([name, uri])
                         self.bookmarks.append(w)

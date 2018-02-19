@@ -1,14 +1,16 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import random
 import requests
 from pymongo import *
 from tika import parser
+import mechanize
+from SolrImport import import_doc
 
 from Logger import *
-from a3_SolrImport import import_doc
-
-logger = setupLogging(__name__)
-logger.setLevel(DEBUG)
+# logger = setupLogging(__name__)
+# logger.setLevel(INFO)
 
 client = MongoClient(u"mongodb://localhost:27017/")
 db = client[u"local"]
@@ -16,13 +18,19 @@ mongo_collection = db[u"Bookmarks"]
 # collection.remove()
 
 stop_words = None
+URLS_ERROR = list()
+
+br = mechanize.Browser()
+br.set_handle_robots(True)
+br.set_handle_refresh(False)
+br.addheaders = [('User-agent', 'Chrome')]
 
 
 def get_stop_words():
     global stop_words
 
     if stop_words is None:
-        with open("stop-word-list.csv", "rb") as f:
+        with open("stop-word-list.csv", str("rb")) as f:
             sw = f.readlines()
 
         nsw = [x.split(",") for x in sw][0]
@@ -53,7 +61,7 @@ def compute_tf_idf(url, text):
 
             # Always define the term, not just the value!
             p = dict()
-            p[u"tfidf"] = tfidf
+            p[u"tfidf"] = round(tfidf, 2)
             p[u"count"] = count
             p[u"word"] = word
             # p = list([tfidf, count, word])
@@ -87,7 +95,7 @@ def tika_parse(html, show_content=False):
                 logger.debug(u"    {} {} = {}".format(n, k, v))
                 n += 1
 
-            logger.debug(u"  {} Content = {} ...".format(n, parsed[u"content"].strip()))
+            # logger.debug(u"  {} Content = {} ...".format(n, parsed[u"content"].strip()))
 
     except Exception, msg:
         logger.error(u"{}".format(msg))
@@ -95,16 +103,21 @@ def tika_parse(html, show_content=False):
     return parsed
 
 
+# @stopwatch
 def download_page(url):
     global stop_words
+    global URLS_ERROR
+    global br
     text = dict()
 
-    html = requests.get(url[1], timeout=10).text
-
-    tp = tika_parse(html)
-    df = [x.lower() for x in tp[u"content"].split(os.linesep) if x != os.linesep and len(x) > 2]
-
     try:
+        # html = requests.get(url[1], timeout=10).text
+        # Use Mechanize since it will get the entire html, including any JavaScript addtions.
+        html = br.open(url[1], timeout=10).read().decode("ascii", "ignore")
+
+        tp = tika_parse(html)
+        df = [x.lower() for x in tp[u"content"].split(os.linesep) if x != os.linesep and len(x) > 2]
+
         for words in df:
             # logger.info(".{}.".format(words))
             for word in words.split(u" "):
@@ -115,6 +128,9 @@ def download_page(url):
 
     except Exception, msg:
         logger.warn(u"%s" % msg)
+        a = dict()
+        a["url"] = url[1]
+        URLS_ERROR.append(a)
 
     f = compute_tf_idf(url, text)
     persist_url_words(f)
@@ -135,9 +151,9 @@ def main(test=False):
         bookmarks = bookmarks[:5]
 
     try:
-        for url in bookmarks:
+        for n, url in enumerate(bookmarks):
             try:
-                logger.info(u"Downloading URL : {}".format(url[1]))
+                logger.info(u"{}. Downloading URL : {}".format(n, url[1]))
                 download_page(url)
 
                 r = (int(random.random() * delay) + 1)
@@ -155,6 +171,8 @@ def main(test=False):
 
     logger.info(u"Found {} bookmarks".format(processed))
     logger.info(u"Errors : {}".format(error_count))
+
+    saveList(URLS_ERROR, "url_errors.pl")
 
 
 if __name__ == u"__main__":

@@ -26,9 +26,14 @@ def querySolrCollection(collection=u"Test", query=u"title:*"):
 
 
 def resetSolr(c):
+    """
+    curl "http://localhost:8984/solr/demo/update?commit=true" -H "Content-Type: text/xml" \
+    --data-binary '<delete><query>*:*</query></delete>'
+    """
+
     from subprocess import call
     command = u"curl"
-    p0 = u"http://localhost:8983/solr/%s/update?commit=true " % c
+    p0 = u"http://localhost:8984/solr/%s/update?commit=true " % c
     p1 = u"-H 'Content-Type: text/xml' "
     p2 = u"--data-binary '<delete><query>*:*</query></delete>'"
     cmd = [u"%s %s %s %s" % (command, p0, p1, p2,)]
@@ -36,16 +41,20 @@ def resetSolr(c):
 
 
 if __name__ == u"__main__":
-    collection = u"gettingstarted"
-    s, url = querySolrCollection(collection=collection)
-    logger.debug(u"%s" % url)
 
-    conn = urlopen(url)
-    rsp = eval(conn.read())
+    collection = u"demo"
+    resetSolr(collection)
 
-    logger.debug(u"number of matches={}".format(rsp[u'response'][u'numFound']))
+    if False:
+        s, url = querySolrCollection(collection=collection)
+        logger.debug(u"%s" % url)
 
-    # print out the name field for each returned document
-    for doc in rsp[u'response'][u'docs']:
-        for k, v in doc.items():
-            logger.debug(u"{} : {}".format(k, v))
+        conn = urlopen(url)
+        rsp = eval(conn.read())
+
+        logger.debug(u"number of matches={}".format(rsp[u'response'][u'numFound']))
+
+        # print out the name field for each returned document
+        for doc in rsp[u'response'][u'docs']:
+            for k, v in doc.items():
+                logger.debug(u"{} : {}".format(k, v))

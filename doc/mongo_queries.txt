@@ -7,7 +7,7 @@ db.getCollection('Bookmarks').find({"$where" : "this.words.length > 0"})
 # Did not work?
 db.getCollection('Bookmarks').find({"$where" : "this.words.length > 0"}).sort({"_id":-1})
 
-
+# $exists
 #
 db.getCollection('Weather').find({"words" : {"$exists" : "True"}})
 db.getCollection('Weather').find({"to" : {"$exists" : "true"}})
@@ -70,9 +70,18 @@ results = collection.group(key={"To":1}, condition={}, initial={"count":0}, redu
 s = sorted(results, key=lambda result: result["count"], reverse=True)
 for doc in s: print doc;
 
-
-# Arrays
+# Array of Arrays
 # https://stackoverflow.com/questions/12629692/querying-an-array-of-arrays-in-mongod
 db.getCollection('Bookmarks').find({"words": {$size: 3}})
 db.getCollection('Bookmarks').find({'words':{$elemMatch:{$elemMatch:{$in:['resistor']}}}})
 db.getCollection('Bookmarks').find({'words':{$elemMatch:{$elemMatch:{$in:['find']}}}})
+
+# Array of Dictionaries
+db.getCollection('Bookmarks').find({'words': {$elemMatch: {"word": {$eq: "google"}}}})
+
+# Max
+db.getCollection('Bookmarks').aggregate([{ $group: { _id: "$Total_Words", maxWords: {$max: "TotalWords"}} }])
+db.getCollection('Bookmarks').aggregate([{ $group: { _id: "$Total_Words", maxWords: {$max: "TotalWords"}} }].sort({"maxWords":-1}))
+
+# Return specific fields
+db.getCollection('Bookmarks').find({'words': {$elemMatch: {"word": {$eq: "google"}}}}, { item: 1, name: 1})

@@ -5,9 +5,9 @@ logger = setupLogging(__name__)
 logger.setLevel(INFO)
 
 
-def logWordID(fileWords = u"word_ip.pd"):
+def logWordID(fileWords=u"word_ip.pd"):
 
-    with open(fileWords, u"rb") as cf:
+    with open(fileWords, "rb") as cf:
         wd = pickle.load(cf)
         logger.debug(u"Loaded : %s" % fileWords)
         cf.close()

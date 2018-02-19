@@ -62,7 +62,7 @@ def insert_word_counts():
         for v1 in v:
             logger.info(u"\t%s\t %s" % (v1[0], v1[1]))
 
-        wl = dict({k.replace(".", "-") : v})
+        wl = dict({k.replace(".", "-"): v})
         Words.insert(wl)
 
 

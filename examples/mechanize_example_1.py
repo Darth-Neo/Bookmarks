@@ -4,7 +4,8 @@ import re
 import mechanize
 
 br = mechanize.Browser()
-br.open("http://www.foxnews.com/")
+br.open("http://playground.arduino.cc/CommonTopics/PullUpDownResistor")
+
 # follow second link with element text matching regular expression
 response1 = br.follow_link(text_regex=r"cheese\s*shop", nr=1)
 assert br.viewing_html()

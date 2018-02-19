@@ -4,13 +4,14 @@ import requests
 import random
 import time
 from urlparse import urlparse
-from solr_import import *
+from SolrImport import *
 import tika
 from tika import parser
 
 from Logger import *
 logger = setupLogging(__name__)
 logger.setLevel(DEBUG)
+
 
 def tika_parse(html, show_content=False):
     parsed = None
@@ -31,6 +32,7 @@ def tika_parse(html, show_content=False):
         # sys.exit(1)
 
     return parsed
+
 
 if __name__ == u"__main__":
 
