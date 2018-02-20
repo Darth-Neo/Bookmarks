@@ -143,6 +143,36 @@ def saveList(pl, listFile):
         logger.error(u"%s - %s " % (msg, str(sys.exc_info()[0])))
 
 
+def loadDict(dictFile):
+    pl = None
+
+    if not os.path.exists(dictFile):
+        logger.error(u"%s : Does Not Exist!" % dictFile)
+
+    try:
+        cf = open(dictFile, u"rb")
+        pl = pickle.load(cf)
+        logger.debug(u"Loaded : %s" % dictFile)
+        cf.close()
+
+    except Exception, msg:
+        logger.error(u"%s" % msg)
+
+    return pl
+
+
+def saveDict(pl, dictFile):
+    try:
+        logger.debug(u"Save : %s" % dictFile)
+
+        cf = open(dictFile, "wb")
+        pickle.dump(pl, cf)
+        cf.close()
+
+    except IOError, msg:
+        logger.error(u"%s - %s " % (msg, str(sys.exc_info()[0])))
+
+
 def loadList(listFile):
     pl = None
 
@@ -160,10 +190,14 @@ def loadList(listFile):
 
     return pl
 
-
 def logList(l):
     for n, x in enumerate(l):
         logger.info("%d : %s" % (n, x))
+
+
+def logDict(d):
+    for k, v in d.items():
+        logger.info("%d : %s" % (k, k))
 
 
 def force_unicode(value):

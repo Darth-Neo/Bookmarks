@@ -3,16 +3,10 @@
 import re
 import os
 import NaiveBayes
-from pymongo import *
 
 from Logger import *
 logger = setupLogging(__name__)
 logger.setLevel(INFO)
-
-client = MongoClient(u"mongodb://localhost:27017/")
-db = client[u"local"]
-mongo_collection = db[u"Bookmarks"]
-# collection.remove()
 
 
 class BagOfWords(object):

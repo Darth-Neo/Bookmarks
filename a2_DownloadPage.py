@@ -39,7 +39,7 @@ def get_stop_words():
     return stop_words
 
 
-def compute_tf_idf(url, text):
+def compute_term_frequency(url, text):
     sw = get_stop_words()
     output = list()
     doc = dict()
@@ -49,19 +49,19 @@ def compute_tf_idf(url, text):
     len_s = len(s) + 1
 
     # logger.debug("Words : %d" % len_s)
-    # logger.debug("tfidf \t count \t text")
+    # logger.debug("tf \t count \t text")
 
     for n, v in enumerate(s):
         # logger.debug(u"%s : %d" % v)
         word = v[0]
         count = v[1]
         if not (word in sw) and (len(word) > 0) and (count > 1):
-            tfidf = float(float(count / float(len_s)) * 100.0)
+            tf = float(float(count / float(len_s)) * 100.0)
             # logger.debug("%3.2f \t %4d \t .%s." % (tfidf, count, word))
 
             # Always define the term, not just the value!
             p = dict()
-            p[u"tfidf"] = round(tfidf, 2)
+            p[u"tf"] = round(tf, 2)
             p[u"count"] = count
             p[u"word"] = word
             # p = list([tfidf, count, word])
@@ -132,7 +132,7 @@ def download_page(url):
         a["url"] = url[1]
         URLS_ERROR.append(a)
 
-    f = compute_tf_idf(url, text)
+    f = compute_term_frequency(url, text)
     persist_url_words(f)
     export_doc(f)
 

@@ -13,18 +13,6 @@ def createSolrConnection(collection=u"Test"):
     return s
 
 
-def querySolrCollection(collection=u"Test", query=u"title:*"):
-    server = u"localhost"
-    port = 8983
-    wt = u"python"
-    action = u"select"
-    url = u"http://%s:%d/solr/%s/%s?q=%s&wt=%s" % (server, port, collection, action, query, wt)
-    logger.debug(u"%s" % url)
-
-    s = pysolr.Solr(u'http://localhost:8983/solr/%s' % collection)
-    return s, url
-
-
 def resetSolr(c):
     """
     curl "http://localhost:8984/solr/demo/update?commit=true" -H "Content-Type: text/xml" \
@@ -40,13 +28,29 @@ def resetSolr(c):
     call(cmd, shell=True)
 
 
+def querySolrCollection(collection=u"Test", query=u"title:*", port=8984, server=u"localhost"):
+    wt = u"python"
+    action = u"select"
+    url = u"http://%s:%d/solr/%s/%s?q=%s&wt=%s" % (server, port, collection, action, query, wt)
+    logger.debug(u"%s" % url)
+
+    s = pysolr.Solr(url)
+    return s, url
+
+
 if __name__ == u"__main__":
 
     collection = u"demo"
-    resetSolr(collection)
+    query = u"google"
 
     if False:
-        s, url = querySolrCollection(collection=collection)
+        resetSolr(collection)
+
+    elif False:
+        createSolrConnection(collection=collection)
+
+    elif True:
+        s, url = querySolrCollection(collection=collection, query=query)
         logger.debug(u"%s" % url)
 
         conn = urlopen(url)
@@ -54,7 +58,7 @@ if __name__ == u"__main__":
 
         logger.debug(u"number of matches={}".format(rsp[u'response'][u'numFound']))
 
-        # print out the name field for each returned document
+        # Print out the name field for each returned document
         for doc in rsp[u'response'][u'docs']:
             for k, v in doc.items():
                 logger.debug(u"{} : {}".format(k, v))

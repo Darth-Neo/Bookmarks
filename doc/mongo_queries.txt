@@ -85,3 +85,12 @@ db.getCollection('Bookmarks').aggregate([{ $group: { _id: "$Total_Words", maxWor
 
 # Return specific fields
 db.getCollection('Bookmarks').find({'words': {$elemMatch: {"word": {$eq: "google"}}}}, { item: 1, name: 1})
+
+# Sort
+db.getCollection('Bookmarks').find({'words': {$elemMatch: {"word": {$eq: "google"}}}},
+    {item: 1, name: 1, Total_Words: 1}).sort({"Total_Words":-1})
+
+db.getCollection('Bookmarks').find({'words': {$elemMatch: {"word": {$eq: "google"}}}},
+    {item: 1, url: 1, name: 1, Total_Words: 1}).sort({"Total_Words":-1})
+
+

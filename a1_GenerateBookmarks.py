@@ -1,20 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # from __future__ import unicode_literals
-
 import platform
 import pytest
 import re
 import urlparse
 from yaml import load as yload
 from a2_DownloadPage import *
-
-import cgitb
-cgitb.enable(format='text')
-
 from Logger import *
+import cgitb
+
 logger = setupLogging(__name__)
-logger.setLevel(INFO)
+logger.setLevel(DEBUG)
+cgitb.enable(format='text')
 
 
 class Bookmarks(object):
@@ -26,7 +24,7 @@ class Bookmarks(object):
     folders = list()
     bookmarks = list()
 
-    # Weed out URLs that from sdevjmmlinux
+    # Weed out URLs that from sdevjmmlinux, localhost, ...
     url_skip = ["192.168.1.1", "192.168.1.3", "192.168.1.6",
                 "192.168.1.75", "192.168.1.137", "192.168.1.250",
                 "192.168.0.100", "127.0.0.1", "localhost", ]
@@ -57,18 +55,29 @@ class Bookmarks(object):
 
     @staticmethod
     def _determineBookmarkFile():
-
+        """
+        This is stubbed out to handle different platforms
+        :return:
+        """
         # Determine bookmark file
         pltfrm = platform.platform()
+
         if re.search("^Linux.*", pltfrm, re.M | re.I):
             bookmarks = u"{}/.config/google-chrome/Default/Bookmarks".format(os.environ[u"HOME"])
         else:
             logger.error(u"Unknown OS")
-            sys.exit()
+            raise NameError
 
         return bookmarks
 
     def dumpCollection(self, y, n=0, folder=None):
+        """
+        Build a directory for all folders, plus a file for all urls
+        :param y:
+        :param n:
+        :param folder:
+        :return:
+        """
         n += 1
         spaces = " \t" * n
 
@@ -139,28 +148,35 @@ class Bookmarks(object):
         return folder
 
     def processBookmarks(self):
+        """
+        Run through all bookmarks found
+        :return:
+        """
+        try:
+            with open(self.chromeBookmarks, "r") as f:
+                bk = f.readlines()
 
-        with open(self.chromeBookmarks, "r") as f:
-            bk = f.readlines()
+                try:
+                    data = u" ".join([xx.decode(u"ascii", u"ignore") for xx in bk])
+                    ym = yload(data)
 
-            try:
-                data = u" ".join([xx.decode(u"ascii", u"ignore") for xx in bk])
-                ym = yload(data)
+                    if isinstance(ym, dict):
+                        ymd = ym[u"roots"][u"bookmark_bar"][u"children"]
+                        self.dumpCollection(ymd)
 
-                if isinstance(ym, dict):
-                    ymd = ym[u"roots"][u"bookmark_bar"][u"children"]
-                    self.dumpCollection(ymd)
+                except Exception, msg:
+                    logger.error(u"%s" % msg)
+                    sys.exit(-1)
 
-            except Exception, msg:
-                logger.error(u"%s" % msg)
-                sys.exit(-1)
+            logger.info(u"Saving : %s" % self.fileBookmarks)
+            saveList(self.bookmarks, self.fileBookmarks)
 
-        logger.info(u"Saving : %s" % self.fileBookmarks)
-        saveList(self.bookmarks, self.fileBookmarks)
+            fld = sorted(list(set([x.lower() for x in self.folders])))
+            logger.info(u"Saving : %s" % self.fileFolders)
+            saveList(fld, self.fileFolders)
 
-        fld = sorted(list(set([x.lower() for x in self.folders])))
-        logger.info(u"Saving : %s" % self.fileFolders)
-        saveList(fld, self.fileFolders)
+        except IOError, msg:
+            logger.error(u"File not found: ()".format(msg))
 
     @pytest.mark.Bookmarks
     def testBookmarks(self):
@@ -180,7 +196,6 @@ class Bookmarks(object):
 def checkBookmarks():
     st = startTimer()
     fb = u"{}/.config/google-chrome/Default/Bookmarks".format(os.getenv(u"HOME"))
-    # fb = u"/home/james/PythonDev/Bookmarks/Bookmarks/_ChromeBookmarks"
 
     bookmark = Bookmarks(chromeBookmarks=fb)
     bookmark.processBookmarks()
